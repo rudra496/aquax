@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaX — AI Water-Loss Intelligence for Bangladesh</title>
+<meta name="description" content="AquaX finds every lost litre before it becomes lost revenue. AI water-loss intelligence for Bangladeshi water utilities. GP FutureMakers 2026 — Team AquaX, SUST.">
+<style>
+:root{--teal:#0E7490;--teal-d:#155E75;--teal-l:#E0F2F7;--navy:#0F172A;--slate:#475569;--line:#E2E8F0;--bg:#FFFFFF;--soft:#F8FAFC}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--navy);background:var(--bg);line-height:1.6}
+section{scroll-margin-top:76px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+h2{font-size:1.9rem;letter-spacing:-.02em;margin-bottom:8px}
+.kicker{color:var(--teal);font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.12em}
+.sub{color:var(--slate);max-width:640px;margin-bottom:32px}
+.btn{display:inline-block;padding:12px 22px;border-radius:10px;font-weight:600;text-decoration:none;font-size:.95rem;transition:transform .15s,box-shadow .15s,background .15s;cursor:pointer;border:none}
+.btn-p{background:var(--teal);color:#fff;box-shadow:0 2px 8px rgba(14,116,144,.28)}
+.btn-p:hover{background:var(--teal-d);transform:translateY(-1px);box-shadow:0 6px 16px rgba(14,116,144,.32)}
+.btn-s{background:#fff;color:var(--teal-d);border:1.5px solid var(--line)}
+.btn-s:hover{border-color:var(--teal);transform:translateY(-1px)}
+/* nav */
+nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:50}
+.nav-in{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:28px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.2rem;color:var(--navy);text-decoration:none;letter-spacing:-.02em}
+.logo svg{flex:none}
+.nav-links{display:flex;gap:22px;margin-left:auto;align-items:center}
+.nav-links a{color:var(--slate);text-decoration:none;font-size:.92rem;font-weight:500}
+.nav-links a:hover{color:var(--teal)}
+.nav-cta{background:var(--teal);color:#fff !important;padding:9px 16px;border-radius:9px;font-weight:600}
+.nav-cta:hover{background:var(--teal-d)}
+/* hero */
+.hero{background:linear-gradient(180deg,var(--soft) 0%,#fff 100%);padding:72px 0 64px;border-bottom:1px solid var(--line)}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.hero h1{font-size:3rem;line-height:1.08;letter-spacing:-.03em;margin:10px 0 16px}
+.hero p{color:var(--slate);font-size:1.12rem;max-width:480px;margin-bottom:28px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.hero-art{display:flex;justify-content:center}
+/* sections */
+.sec{padding:72px 0}
+.sec-alt{background:var(--soft)}
+.cards{display:grid;gap:18px}
+.cards.c5{grid-template-columns:repeat(5,1fr)}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 18px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.stat .n{font-size:1.75rem;font-weight:800;color:var(--teal);letter-spacing:-.02em}
+.stat .t{font-size:.9rem;color:var(--navy);font-weight:600;margin-top:2px}
+.stat .c{font-size:.74rem;color:var(--slate);margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+.layer{background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px;box-shadow:0 1px 3px rgba(15,23,42,.05);transition:transform .18s,box-shadow .18s}
+.layer:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(15,23,42,.09)}
+.layer .tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.08em;padding:4px 10px;border-radius:99px;background:var(--teal-l);color:var(--teal-d);margin-bottom:12px}
+.layer .tag.y2{background:#FEF3C7;color:#92400E}
+.layer h3{font-size:1.1rem;margin-bottom:8px}
+.layer p{font-size:.92rem;color:var(--slate)}
+.oneliner{margin-top:26px;font-weight:600;color:var(--teal-d);text-align:center;font-size:1.05rem}
+.why li{list-style:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px 16px 46px;margin-bottom:12px;position:relative;color:var(--slate);font-size:.96rem}
+.why li strong{color:var(--navy)}
+.why li svg{position:absolute;left:14px;top:18px}
+.why li .c{display:block;font-size:.74rem;color:#64748B;margin-top:4px}
+/* demo */
+.demo-shot{border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 12px 32px rgba(15,23,42,.12);background:#fff}
+.demo-shot img{display:block;width:100%;height:auto}
+.shot-fallback{display:none;padding:56px 24px;text-align:center;color:var(--slate)}
+.demo-center{text-align:center;margin-top:26px}
+/* footer */
+footer{background:var(--navy);color:#CBD5E1;padding:44px 0;font-size:.88rem}
+.f-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;margin-bottom:26px}
+.f-grid a{color:#7DD3FC;text-decoration:none}
+.f-grid a:hover{text-decoration:underline}
+.f-grid h4{color:#fff;font-size:.95rem;margin-bottom:8px}
+.disc{border-top:1px solid #1E293B;padding-top:18px;font-size:.8rem;color:#94A3B8}
+.credit{margin-top:10px;font-size:.76rem;color:#64748B}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}.hero-art{order:-1}.cards.c5{grid-template-columns:repeat(2,1fr)}.cards.c3{grid-template-columns:1fr}.nav-links a:not(.nav-cta){display:none}.hero h1{font-size:2.2rem}.f-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.cards.c5{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav aria-label="Main navigation">
+  <div class="nav-in">
+    <a class="logo" href="#top" aria-label="AquaX home">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5C12 2.5 5.5 10 5.5 14.6a6.5 6.5 0 0 0 13 0C18.5 10 12 2.5 12 2.5Z" fill="#0E7490"/><path d="M9.2 14.8a2.9 2.9 0 0 0 2.9 2.9" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+      AquaX
+    </a>
+    <div class="nav-links">
+      <a href="#problem">Problem</a>
+      <a href="#solution">Solution</a>
+      <a href="#demo">Demo App</a>
+      <a href="https://github.com/rudra496/aquax" target="_blank" rel="noopener">GitHub</a>
+      <a href="#team">Team</a>
+      <a class="nav-cta" href="app/">Launch Demo App</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="kicker">GP FutureMakers 2026 · Team AquaX · SUST</span>
+      <h1>Find every lost litre.</h1>
+      <p>AI water-loss intelligence for utilities that cannot afford to lose a fifth of their water.</p>
+      <div class="hero-btns">
+        <a class="btn btn-p" href="app/">Launch Demo App</a>
+        <!-- TODO(team): replace href below with the real Round-1 pitch video URL before submitting -->
+        <a class="btn btn-s" href="#video">▶ Watch Round-1 Video</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg width="340" height="280" viewBox="0 0 340 280" fill="none">
+        <rect x="20" y="120" width="300" height="34" rx="17" fill="#0E7490"/>
+        <rect x="34" y="128" width="272" height="8" rx="4" fill="#0891B2" opacity=".7"/>
+        <rect x="150" y="154" width="40" height="60" rx="6" fill="#155E75"/>
+        <circle cx="170" cy="222" r="14" fill="#0E7490"/>
+        <path d="M120 154v34a20 20 0 0 0 20 20" stroke="#94A3B8" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M220 154v34a20 20 0 0 1-20 20" stroke="#94A3B8" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M116 196c0 6-4.5 10.5-10 10.5S96 202 96 196c0-6.8 10-16 10-16s10 9.2 10 16Z" fill="#0EA5E9"/>
+        <path d="M244 196c0 6-4.5 10.5-10 10.5s-10-4.5-10-10.5c0-6.8 10-16 10-16s10 9.2 10 16Z" fill="#0EA5E9"/>
+        <rect x="52" y="40" width="236" height="56" rx="12" fill="#fff" stroke="#E2E8F0"/>
+        <rect x="66" y="54" width="90" height="10" rx="5" fill="#CBD5E1"/>
+        <rect x="66" y="74" width="150" height="8" rx="4" fill="#E2E8F0"/>
+        <circle cx="258" cy="68" r="18" fill="#E0F2F7"/>
+        <path d="M258 58c0 0-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11Z" fill="#0E7490"/>
+        <path d="M300 150l14-24M40 150l-14-24" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>
+        <text x="170" y="272" text-anchor="middle" font-family="inherit" font-size="13" fill="#475569" font-weight="600">22% of production never reaches a paying meter</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<section class="sec" id="problem">
+  <div class="wrap">
+    <span class="kicker">The problem</span>
+    <h2>Non-Revenue Water is water treated, pumped, and never paid for.</h2>
+    <p class="sub">Across Bangladesh, utilities pump clean water into networks where it leaks out through broken pipes, illegal connections and faulty meters — unbilled, untraced, and unpaid.</p>
+    <div class="cards c5">
+      <div class="stat"><div class="n">22%</div><div class="t">NRW at Dhaka WASA — treated water lost before it earns a taka</div><div class="c">Source: TBS News, Apr 2024</div></div>
+      <div class="stat"><div class="n">31–35%</div><div class="t">NRW in Chattogram — nearly a third of production lost</div><div class="c">Source: TBS News, Apr 2024</div></div>
+      <div class="stat"><div class="n">~30%</div><div class="t">NRW at Rajshahi WASA</div><div class="c">Source: The Observer BD, Nov 2024</div></div>
+      <div class="stat"><div class="n">2–3 m</div><div class="t">per-year drop of the Dhaka aquifer as over-pumping continues</div><div class="c">Source: The Daily Star</div></div>
+      <div class="stat"><div class="n">2 billion</div><div class="t">people worldwide lack safely managed drinking water</div><div class="c">Source: UNESCO/UN-Water, WWDR 2023</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-alt" id="solution">
+  <div class="wrap">
+    <span class="kicker">The solution</span>
+    <h2>Three layers of detection, one ranked queue of field actions.</h2>
+    <p class="sub">AquaX starts with the data utilities already have today, then grows into the network and the sky.</p>
+    <div class="cards c3">
+      <div class="layer">
+        <span class="tag">LIVE · WORKING MVP</span>
+        <h3>Layer 1 — Billing anomaly detection</h3>
+        <p>Risk-scores every connection from its billing and consumption history: sudden unexplained drops, dormant meters, abnormal patterns. Each flag ships with a plain-language reason and a recommended field action.</p>
+      </div>
+      <div class="layer">
+        <span class="tag y2">YEAR 2</span>
+        <h3>Layer 2 — DMA flow &amp; pressure anomaly</h3>
+        <p>Listens to district-metered-area flow and pressure streams. Night-flow analysis and pressure-drop signatures localise leaks to a zone before a customer ever complains.</p>
+      </div>
+      <div class="layer">
+        <span class="tag y2">YEAR 2–3</span>
+        <h3>Layer 3 — Sentinel-1 SAR leak mapping</h3>
+        <p>Free radar imagery from ESA's Copernicus Sentinel-1 detects soil-moisture anomalies along buried mains — satellite-scale leak hunting with zero proprietary contract.</p>
+      </div>
+    </div>
+    <p class="oneliner">All three feed one dashboard that ranks by litres and revenue recoverable.</p>
+  </div>
+</section>
+
+<section class="sec" id="why">
+  <div class="wrap">
+    <span class="kicker">Why AquaX is different</span>
+    <h2>Built for the gap nobody else is filling.</h2>
+    <ul class="why" style="margin-top:28px">
+      <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#E0F2F7"/><path d="M6 10.5l2.6 2.5L14 7.5" stroke="#0E7490" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>The flood-forecasting field is crowded; water-loss intelligence is not.</strong> Every AI-for-water team in the region is predicting floods. Almost nobody is helping utilities stop losing the water they already treat.<span class="c">Team analysis of GP FutureMakers problem spaces</span></li>
+      <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#E0F2F7"/><path d="M6 10.5l2.6 2.5L14 7.5" stroke="#0E7490" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>No Bangladeshi water utility runs AI-based predictive loss detection today.</strong> Loss control is still complaint-driven and manual.<span class="c">Source: UNB News</span></li>
+      <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#E0F2F7"/><path d="M6 10.5l2.6 2.5L14 7.5" stroke="#0E7490" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>AquaX sits on infrastructure that already exists.</strong> Dhaka WASA has rolled out district metering in 62 of its 164 zones — the data plumbing for Layer 2 is being laid right now.<span class="c">Source: UNB News</span></li>
+      <li><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#E0F2F7"/><path d="M6 10.5l2.6 2.5L14 7.5" stroke="#0E7490" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>Free, open satellite data instead of proprietary contracts.</strong> The satellite-leak-detection approach (proven commercially by ASTERRA-class services worldwide) is replicated on Copernicus Sentinel-1 — no six-figure licence.<span class="c">Source: ASTERRA via Kurrant News, 2025</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="sec sec-alt" id="demo">
+  <div class="wrap">
+    <span class="kicker">See it running</span>
+    <h2>A working dashboard, not a slide deck.</h2>
+    <p class="sub">The Layer-1 engine is live in the demo: 200 scanned accounts, ranked flags with AI reasoning, the Droplet assistant, plus design prototypes for DMA monitoring, satellite SAR and a recovery simulator.</p>
+    <figure class="demo-shot">
+      <img src="docs/screenshot-dashboard.png" alt="AquaX dashboard — ranked flagged accounts with AI reasoning" onerror="this.style.display='none';this.parentElement.querySelector('.shot-fallback').style.display='block'">
+      <div class="shot-fallback"><strong>Dashboard screenshot coming soon.</strong><br>Launch the demo app below to see it live.</div>
+    </figure>
+    <div class="demo-center"><a class="btn btn-p" href="app/">Launch Demo App →</a></div>
+  </div>
+</section>
+
+<section class="sec" id="team">
+  <div class="wrap">
+    <span class="kicker">The team</span>
+    <h2>Team AquaX — SUST, Bangladesh.</h2>
+    <p class="sub">Students of Shahjalal University of Science &amp; Technology, built for GP FutureMakers 2026 Round 2. Team AquaX — students of Shahjalal University of Science &amp; Technology.</p>
+  </div>
+</section>
+
+<footer id="video">
+  <div class="wrap">
+    <div class="f-grid">
+      <div>
+        <h4>AquaX</h4>
+        <p>AI water-loss intelligence for utilities that cannot afford to lose a fifth of their water.</p>
+      </div>
+      <div>
+        <h4>Links</h4>
+        <p><a href="app/">Demo App</a><br><a href="https://github.com/rudra496/aquax" target="_blank" rel="noopener">GitHub</a><br><a href="https://aqua-x.lovable.app" target="_blank" rel="noopener">Lovable build</a></p>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p>rudrasarker125@gmail.com<br>Team AquaX — SUST</p>
+      </div>
+    </div>
+    <p class="disc">Demonstration build — Layer 1 engine is real, demo dataset is synthetic; Layer 2/3 are design prototypes.</p>
+    <p class="credit">© 2026 Made by Team AquaX — SUST, Bangladesh · License: MIT · Satellite imagery: ESA Copernicus Sentinel-1 (open data)</p>
+  </div>
+</footer>
+
+</body>
+</html>

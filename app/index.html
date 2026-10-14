@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaX — Water-Loss Intelligence Dashboard</title>
+<style>
+:root{--teal:#0E7490;--teal-d:#155E75;--teal-l:#E0F2F7;--navy:#0F172A;--slate:#475569;--muted:#64748B;--line:#E2E8F0;--bg:#F1F5F9;--card:#FFFFFF;
+--red:#DC2626;--red-bg:#FEE2E2;--amber:#D97706;--amber-bg:#FEF3C7;--yellow:#CA8A04;--yellow-bg:#FEF9C3;--green:#059669;--green-bg:#D1FAE5}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--navy);background:var(--bg);font-size:14.5px;line-height:1.55}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:3px solid #67E8F9;outline-offset:2px;border-radius:4px}
+/* banner */
+#demo-banner{background:#164E63;color:#E0F2F7;font-size:.82rem;padding:8px 16px;display:flex;gap:12px;align-items:center;justify-content:center}
+#demo-banner button{background:rgba(255,255,255,.12);border:none;color:#E0F2F7;border-radius:6px;padding:2px 10px;font-size:.78rem}
+/* shell */
+.shell{display:flex;min-height:calc(100vh - 35px)}
+.sidebar{width:218px;flex:none;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:calc(100vh - 35px)}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.25rem;letter-spacing:-.02em;padding:20px 20px 14px}
+.logo .sub{display:block;font-size:.62rem;font-weight:600;color:var(--muted);letter-spacing:.08em}
+.nav{display:flex;flex-direction:column;gap:2px;padding:8px 10px;flex:1}
+.nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;padding:10px 12px;border-radius:9px;color:var(--slate);font-size:.92rem;font-weight:500;transition:background .15s,color .15s}
+.nav button:hover{background:var(--teal-l);color:var(--teal-d)}
+.nav button[aria-selected="true"]{background:var(--teal);color:#fff;font-weight:600}
+.nav button svg{flex:none}
+.side-foot{padding:14px 20px;border-top:1px solid var(--line);font-size:.74rem;color:var(--muted)}
+.side-foot a{color:var(--teal-d);text-decoration:none;display:block;margin-top:3px}
+.side-foot a:hover{text-decoration:underline}
+.maincol{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:14px;padding:14px 26px;background:#fff;border-bottom:1px solid var(--line)}
+.topbar h1{font-size:1.15rem;letter-spacing:-.01em}
+.badge{margin-left:auto;font-size:.72rem;font-weight:600;color:var(--teal-d);background:var(--teal-l);border-radius:99px;padding:4px 12px;white-space:nowrap}
+main{padding:22px 26px 60px;flex:1}
+.tab{display:none;animation:fadein .25s ease}
+.tab.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* generic */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.card .card-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.card .card-b{padding:18px}
+.note{font-size:.74rem;color:var(--muted)}
+.banner{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:12px;padding:10px 16px;font-size:.82rem;margin-bottom:16px}
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.kpi .lab{font-size:.74rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kpi .val{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;color:var(--teal-d);margin-top:2px}
+.kpi.hot .val{color:var(--red)}
+.kpi .note{margin-top:2px}
+/* filters + table */
+.filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filters input,.filters select,.sim-field input,.sim-field select{border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:.88rem;background:#fff;color:var(--navy)}
+.filters input{flex:1;min-width:160px}
+.tblwrap{overflow-x:auto;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:.87rem;min-width:760px}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);background:#F8FAFC;white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid #F1F5F9;white-space:nowrap}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover{background:var(--teal-l)}
+.chip{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px}
+.chip-h{background:var(--red-bg);color:var(--red)}.chip-m{background:var(--amber-bg);color:var(--amber)}
+.chip-l{background:var(--yellow-bg);color:var(--yellow)}.chip-n{background:var(--green-bg);color:var(--green)}
+.riskb{display:inline-block;min-width:34px;text-align:center;font-weight:700;border-radius:8px;padding:2px 7px;font-size:.8rem}
+.r-h{background:var(--red-bg);color:var(--red)}.r-m{background:var(--amber-bg);color:var(--amber)}.r-l{background:var(--yellow-bg);color:var(--yellow)}.r-n{background:#F1F5F9;color:var(--slate)}
+.dropdn{font-weight:600}.dn-bad{color:var(--red)}.dn-ok{color:var(--green)}.dn-mid{color:var(--amber)}
+/* drawer */
+#overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);opacity:0;pointer-events:none;transition:opacity .2s;z-index:90}
+#overlay.open{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;right:0;height:100%;width:430px;max-width:94vw;background:#fff;box-shadow:-12px 0 32px rgba(15,23,42,.18);transform:translateX(105%);transition:transform .25s ease;z-index:100;display:flex;flex-direction:column}
+#drawer.open{transform:none}
+.dr-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.dr-h h2{font-size:1.05rem}
+.dr-h .x{margin-left:auto;background:#F1F5F9;border:none;border-radius:8px;width:32px;height:32px;font-size:1rem;color:var(--slate)}
+.dr-b{padding:18px 20px;overflow-y:auto;flex:1}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.statgrid .sg{background:#F8FAFC;border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.statgrid .sg .k{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.statgrid .sg .v{font-weight:700;font-size:.95rem;margin-top:1px}
+.assessment{background:var(--teal-l);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;padding:14px 16px;font-size:.9rem;color:#164E63;margin-top:6px}
+.assessment h3{font-size:.76rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;color:var(--teal-d)}
+.action{background:#FFF7ED;border-left:4px solid #EA580C;border-radius:0 10px 10px 0;padding:12px 16px;font-size:.88rem;margin-top:12px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:600;font-size:.88rem;transition:background .15s,transform .15s;text-decoration:none}
+.btn:hover{background:var(--teal-d);transform:translateY(-1px)}
+.btn.ghost{background:#fff;color:var(--teal-d);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--teal);background:var(--teal-l)}
+/* chat */
+.chatwrap{max-width:820px}
+#chat-log{height:420px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;background:#F8FAFC}
+.msg{max-width:78%;padding:10px 14px;border-radius:14px;font-size:.9rem;white-space:pre-wrap}
+.msg.bot{background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.user{background:var(--teal);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px 0}
+.chipbtn{background:var(--teal-l);color:var(--teal-d);border:1px solid #A5F3FC;border-radius:99px;padding:6px 13px;font-size:.8rem;font-weight:600;transition:background .15s}
+.chipbtn:hover{background:#A5F3FC}
+.chat-in{display:flex;gap:10px;padding:14px 18px 18px}
+.chat-in input{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:.92rem}
+.tariffbox{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)}
+.tariffbox input{width:64px;border:1px solid var(--line);border-radius:7px;padding:5px 7px;font-size:.82rem;text-align:right}
+/* DMA */
+.dma-grid{display:grid;grid-template-columns:290px 1fr;gap:16px;align-items:start}
+.zonecard{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s}
+.zonecard:hover{border-color:var(--teal)}
+.zonecard.sel{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-l)}
+.zonecard .zc-top{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.zonecard .zc-row{font-size:.78rem;color:var(--muted);margin-top:5px;display:flex;gap:14px}
+/* SAR */
+.sar-grid{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+.hs-card{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s}
+.hs-card:hover{border-color:var(--teal)}
+.hs-card.sel{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-l)}
+.pulse{animation:pulse 2.4s ease-out infinite;transform-origin:center;transform-box:fill-box}
+@keyframes pulse{0%{opacity:.55;transform:scale(1)}70%{opacity:0;transform:scale(1.9)}100%{opacity:0;transform:scale(1.9)}}
+/* simulator */
+.sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.sim-field{display:flex;flex-direction:column;gap:5px;margin-bottom:15px}
+.sim-field label{font-weight:600;font-size:.85rem;display:flex;justify-content:space-between;gap:10px}
+.sim-field label output{color:var(--teal-d);font-weight:800}
+.sim-field input[type=range]{width:100%;accent-color:var(--teal)}
+.sim-note{font-size:.72rem;color:var(--muted)}
+.outgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.outgrid .og{background:#F8FAFC;border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+.outgrid .og .k{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.outgrid .og .v{font-weight:800;font-size:1.06rem;color:var(--teal-d);margin-top:2px}
+/* reports */
+.rep-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+#print-summary{display:none}
+@media print{
+  #demo-banner,.sidebar,.topbar,.fab,.no-print,#overlay,#drawer,#toast{display:none!important}
+  .shell{display:block;min-height:0}.sidebar{display:none}
+  main{padding:0}.tab{display:none!important}
+  #print-summary{display:block!important;font-size:12px}
+  #print-summary table{min-width:0;font-size:11px}
+  #print-summary td,#print-summary th{padding:5px 8px}
+}
+/* toast + fab */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 20px;border-radius:99px;font-size:.85rem;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:120}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.fab{position:fixed;right:24px;bottom:24px;background:var(--teal);color:#fff;border:none;border-radius:99px;padding:13px 20px;font-weight:700;font-size:.9rem;box-shadow:0 10px 24px rgba(14,116,144,.4);z-index:60;transition:background .15s,transform .15s}
+.fab:hover{background:var(--teal-d);transform:translateY(-2px)}
+.hidden{display:none!important}
+@media(max-width:960px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .dma-grid,.sar-grid,.sim-grid{grid-template-columns:1fr}
+  .shell{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--line)}
+  .nav{flex-direction:row;overflow-x:auto;padding:8px}
+  .nav button{white-space:nowrap;padding:8px 12px}
+  .side-foot{display:none}
+  .logo{padding:14px 16px 6px}
+}
+@media(max-width:560px){.kpis{grid-template-columns:1fr}main{padding:14px}.topbar{padding:12px 14px}#drawer{width:100vw}}
+</style>
+</head>
+<body>
+
+<div id="demo-banner" role="note">
+  <span>Demo build: Layer-1 engine is real; dataset is synthetic for demonstration. Layer 2 &amp; 3 are design prototypes.</span>
+  <button id="banner-x" aria-label="Dismiss demo notice">Dismiss</button>
+</div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5C12 2.5 5.5 10 5.5 14.6a6.5 6.5 0 0 0 13 0C18.5 10 12 2.5 12 2.5Z" fill="#0E7490"/><path d="M9.2 14.8a2.9 2.9 0 0 0 2.9 2.9" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>AquaX<span class="sub">WATER-LOSS INTELLIGENCE</span></span>
+    </div>
+    <nav class="nav" role="tablist" aria-label="Sections">
+      <button role="tab" data-tab="dashboard" aria-selected="true"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 16a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 16 13.5 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="16" r="1.6" fill="currentColor"/></svg>Dashboard</button>
+      <button role="tab" data-tab="droplet" aria-selected="false"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h11A1.5 1.5 0 0 1 17 5.5v7a1.5 1.5 0 0 1-1.5 1.5H8l-3.6 3v-3H4.5A1.5 1.5 0 0 1 3 12.5v-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Droplet Assistant</button>
+      <button role="tab" data-tab="dma" aria-selected="false"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2 7c2.5-2.5 5-2.5 7.5 0s5 2.5 7.5 0M2 13c2.5-2.5 5-2.5 7.5 0s5 2.5 7.5 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>DMA Zone Monitor</button>
+      <button role="tab" data-tab="sar" aria-selected="false"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="2.2" fill="currentColor"/><path d="M5.5 5.5a6.4 6.4 0 0 0 0 9M14.5 5.5a6.4 6.4 0 0 1 0 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Satellite SAR</button>
+      <button role="tab" data-tab="sim" aria-selected="false"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="6" r="2" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="13" cy="10" r="2" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="14" r="2" fill="#fff" stroke="currentColor" stroke-width="1.6"/></svg>What-If Simulator</button>
+      <button role="tab" data-tab="reports" aria-selected="false"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 2.5h7l3.5 3.5v11a.9.9 0 0 1-1 1H5a1 1 0 0 1-1-1v-13.5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Reports</button>
+    </nav>
+    <div class="side-foot">
+      <a href="../index.html">← Landing site</a>
+      <a href="https://github.com/rudra496/aquax" target="_blank" rel="noopener">GitHub (placeholder)</a>
+      <span>GP FutureMakers 2026 — Team AquaX</span>
+    </div>
+  </aside>
+
+  <div class="maincol">
+    <header class="topbar">
+      <h1 id="tab-title">Dashboard</h1>
+      <span class="badge">Seeded demo dataset · deterministic</span>
+    </header>
+
+    <main>
+      <!-- ============ DASHBOARD ============ -->
+      <section class="tab active" id="tab-dashboard" role="tabpanel" aria-label="Dashboard">
+        <div class="kpis">
+          <div class="kpi"><div class="lab">Accounts scanned</div><div class="val" id="k1">0</div><div class="note">this billing cycle</div></div>
+          <div class="kpi hot"><div class="lab">High-risk flagged</div><div class="val" id="k2">0</div><div class="note">+ 6 lower-priority flags</div></div>
+          <div class="kpi"><div class="lab">Litres at risk</div><div class="val" id="k3">0</div><div class="note">per month · high-risk accounts</div></div>
+          <div class="kpi"><div class="lab">Est. revenue recoverable</div><div class="val" id="k4">0</div><div class="note">৳/mo at assumed ৳15/kl dashboard tariff</div></div>
+        </div>
+        <div class="card">
+          <div class="card-h">Ranked accounts
+            <span class="note" id="tbl-count" style="font-weight:400;margin-left:auto"></span>
+          </div>
+          <div class="card-b" style="padding-top:12px">
+            <div class="filters">
+              <input id="f-search" type="search" placeholder="Search account ID (e.g. WASA-00042)" aria-label="Search account ID">
+              <select id="f-zone" aria-label="Filter by zone"><option value="">All zones</option></select>
+              <select id="f-status" aria-label="Filter by status">
+                <option value="">All statuses</option><option>High Risk</option><option>Medium Risk</option><option>Low Risk</option><option>Normal</option>
+              </select>
+            </div>
+            <div class="tblwrap">
+              <table id="acc-table">
+                <thead><tr><th>Account</th><th>Zone</th><th>Type</th><th>Trend (last mo vs avg)</th><th>Avg 6-mo (kl)</th><th>Last mo (kl)</th><th>Risk</th><th>Status</th></tr></thead>
+                <tbody id="acc-tbody"></tbody>
+              </table>
+            </div>
+            <p class="note" style="margin-top:10px">Click any row for the sparkline and the AI analyst assessment. Flagged accounts are ranked first by estimated litres at risk. Risk scores and litres-at-risk are model outputs on synthetic billing data.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ DROPLET ============ -->
+      <section class="tab" id="tab-droplet" role="tabpanel" aria-label="Droplet chat assistant">
+        <div class="card chatwrap">
+          <div class="card-h">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5C12 2.5 5.5 10 5.5 14.6a6.5 6.5 0 0 0 13 0C18.5 10 12 2.5 12 2.5Z" fill="#0E7490"/></svg>
+            Droplet — Your AI Water Assistant
+            <span class="tariffbox"><label for="chat-tariff">Tariff ৳/kl</label><input id="chat-tariff" type="number" min="1" step="1" value="25"><span title="Tariff is user-set">ⓘ user-set</span></span>
+          </div>
+          <div id="chat-log" aria-live="polite"></div>
+          <div class="chips" id="chips">
+            <button class="chipbtn">Which zone has the most flagged accounts?</button>
+            <button class="chipbtn">Show me commercial accounts with sudden drops</button>
+            <button class="chipbtn">What revenue could we recover this month?</button>
+            <button class="chipbtn">How does AquaX work?</button>
+          </div>
+          <div class="chat-in">
+            <input id="chat-input" type="text" placeholder="Ask about accounts, zones, flags or recovery…" aria-label="Ask Droplet">
+            <button class="btn" id="chat-send">Send</button>
+          </div>
+        </div>
+        <p class="note" style="margin-top:10px;max-width:820px">Droplet answers are computed live from the seeded demo dataset — every number it quotes is derived from that data. The tariff above is user-set (default ৳25/kl); the dashboard KPI card separately assumes ৳15/kl.</p>
+      </section>
+
+      <!-- ============ DMA ============ -->
+      <section class="tab" id="tab-dma" role="tabpanel" aria-label="DMA zone monitor">
+        <div class="banner">Design prototype — demonstrates the Year-2 Layer-2 concept on simulated SCADA data.</div>
+        <div class="dma-grid">
+          <div id="dma-cards" aria-label="Zones"></div>
+          <div class="card">
+            <div class="card-h"><span id="dma-name">Select a zone</span><span class="note" id="dma-sub" style="font-weight:400;margin-left:auto"></span></div>
+            <div class="card-b">
+              <div id="dma-chart"></div>
+              <div id="dma-stats" style="margin-top:12px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SAR ============ -->
+      <section class="tab" id="tab-sar" role="tabpanel" aria-label="Satellite SAR">
+        <div class="banner">Concept visualisation — real product pairs Sentinel-1 imagery with the utility's own repair records (ESA Copernicus open data).</div>
+        <div class="sar-grid">
+          <div class="card">
+            <div class="card-h">Soil-moisture change detection · stylised city grid
+              <span class="note" style="font-weight:400;margin-left:auto">hotspot size = detection confidence</span>
+            </div>
+            <div class="card-b" style="padding:10px">
+              <svg id="sar-map" viewBox="0 0 640 480" style="width:100%;height:auto;display:block;border-radius:8px;background:#F0F9FF" role="img" aria-label="Stylised city map with three soil-moisture hotspots"></svg>
+            </div>
+          </div>
+          <div>
+            <div id="sar-panel" aria-label="Hotspots"></div>
+            <p class="note" style="margin-top:6px">Radar backscatter / soil-moisture anomalies are correlated with pipe material, age and past repair records to produce an inspect-priority queue. Passive detection works day/night and through cloud — key for Bangladesh's monsoon.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SIMULATOR ============ -->
+      <section class="tab" id="tab-sim" role="tabpanel" aria-label="What-if recovery simulator">
+        <div class="banner">AquaX estimate tool — illustrative. Outputs are simple arithmetic on <em>your</em> inputs, not a utility-reported figure.</div>
+        <div class="sim-grid">
+          <div class="card">
+            <div class="card-h">Your inputs</div>
+            <div class="card-b">
+              <div class="sim-field"><label for="s-nrw">Utility NRW % <output id="o-nrw">22%</output></label>
+                <input type="range" id="s-nrw" min="5" max="60" step="1" value="22">
+                <span class="sim-note">Dhaka WASA reported NRW, TBS News 2024</span></div>
+              <div class="sim-field"><label for="s-cov">Detection coverage (% of accounts/zones) <output id="o-cov">60%</output></label>
+                <input type="range" id="s-cov" min="5" max="100" step="5" value="60"></div>
+              <div class="sim-field"><label for="s-rec">Verified recovery rate (% of detected loss) <output id="o-rec">35%</output></label>
+                <input type="range" id="s-rec" min="5" max="100" step="5" value="35"></div>
+              <div class="sim-field"><label for="s-prod">Annual production volume (kl)</label>
+                <input type="number" id="s-prod" min="100000" step="1000000" value="100000000">
+                <span class="sim-note">set to your utility's own figure</span></div>
+              <div class="sim-field"><label for="s-tariff">Tariff (৳/kl)</label>
+                <input type="number" id="s-tariff" min="1" step="1" value="25">
+                <span class="sim-note">user-set</span></div>
+              <div class="sim-field"><label for="s-share">AquaX attributable share % <output id="o-share">20%</output></label>
+                <input type="range" id="s-share" min="0" max="100" step="5" value="20"></div>
+              <div class="sim-field"><label for="s-lpd">Litres / person / day</label>
+                <input type="number" id="s-lpd" min="20" step="5" value="50">
+                <span class="sim-note">households assumed at 5 persons</span></div>
+              <div class="sim-field"><label for="s-op">Monthly operating cost (৳)</label>
+                <input type="number" id="s-op" min="0" step="10000" value="150000"></div>
+              <div class="sim-field"><label for="s-setup">One-off setup cost (৳)</label>
+                <input type="number" id="s-setup" min="0" step="50000" value="600000">
+                <span class="sim-note">Illustrative cost model</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-h">Projected annual impact</div>
+              <div class="card-b">
+                <div class="outgrid">
+                  <div class="og"><div class="k">Annual loss (NRW volume)</div><div class="v" id="o-loss">—</div></div>
+                  <div class="og"><div class="k">Detected by AquaX</div><div class="v" id="o-det">—</div></div>
+                  <div class="og"><div class="k">Recoverable volume / yr</div><div class="v" id="o-rec2">—</div></div>
+                  <div class="og"><div class="k">Recoverable revenue / yr</div><div class="v" id="o-bdt">—</div></div>
+                  <div class="og"><div class="k">AquaX share / yr</div><div class="v" id="o-sharev">—</div></div>
+                  <div class="og"><div class="k">Households' annual needs</div><div class="v" id="o-hh">—</div></div>
+                </div>
+                <p class="note">Illustrative — AquaX estimate arithmetic on your inputs; not a utility-reported figure.</p>
+              </div>
+            </div>
+            <div class="card" style="margin-top:16px">
+              <div class="card-h">Cumulative recovery vs cost · 36 months
+                <span class="note" style="font-weight:400;margin-left:auto">recovery ramps in over 18 months</span></div>
+              <div class="card-b"><div id="sim-chart"></div><p class="note" id="sim-be" style="margin-top:8px"></p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ REPORTS ============ -->
+      <section class="tab" id="tab-reports" role="tabpanel" aria-label="Reports">
+        <div class="card no-print">
+          <div class="card-h">Export &amp; print</div>
+          <div class="card-b">
+            <div class="rep-btns">
+              <button class="btn" id="btn-csv">⬇ Download flagged accounts (CSV)</button>
+              <button class="btn ghost" id="btn-print">🖨 Print summary</button>
+            </div>
+            <p class="note">The CSV contains all 14 flagged accounts (8 high-risk, 3 medium, 3 low) with model scores, estimated shortfall and the recommended field action. Print summary is formatted for A4.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- drawer -->
+<div id="overlay"></div>
+<aside id="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-title">
+  <div class="dr-h">
+    <h2 id="dr-title">Account</h2>
+    <span id="dr-chip"></span>
+    <button class="x" id="dr-close" aria-label="Close details">✕</button>
+  </div>
+  <div class="dr-b">
+    <div id="dr-spark"></div>
+    <div class="statgrid" id="dr-stats"></div>
+    <div class="assessment"><h3>AI analyst assessment</h3><p id="dr-assess"></p></div>
+    <div class="action" id="dr-action"></div>
+    <button class="btn" id="dr-copy" style="margin-top:14px">Copy assessment</button>
+  </div>
+</aside>
+
+<button class="fab hidden" id="fab">💬 Ask Droplet</button>
+<div id="toast" role="status"></div>
+
+<div id="print-summary"></div>
+
+<script>
+'use strict';
+/* ================= 1. SEEDED PRNG (mulberry32) ================= */
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ================= 2. DATA (deterministic, inline) ================= */
+var TARIFF_DASH = 15; /* dashboard assumed tariff, ৳ per kl */
+var DATA = (function(){
+  var ZONES = ['Mirpur','Dhanmondi','Uttara','Gulshan','Mohammadpur','Tejgaon'];
+
+  /* 14 flagged accounts (8 high + 3 medium + 3 low), hand-authored so the
+     KPIs reproduce the Round-1 video numbers exactly:
+     Σ litresAtRisk (high) = 320,982 L/mo ; Σ round(litresAtRisk/1000 × 15) = ৳4,813/mo */
+  var FLAGGED = [
+    {id:'WASA-00042',zone:'Mirpur',type:'Commercial',series:[96.4,88.2,92.5,94.1,94.4,9.2],risk:97,status:'High Risk',litresAtRisk:68400},
+    {id:'WASA-00118',zone:'Gulshan',type:'Commercial',series:[71.8,69.5,73.2,70.4,72.6,18.3],risk:94,status:'High Risk',litresAtRisk:54233},
+    {id:'WASA-00087',zone:'Dhanmondi',type:'Commercial',series:[64.0,61.5,66.8,63.2,65.3,17.7],risk:92,status:'High Risk',litresAtRisk:47299},
+    {id:'WASA-00156',zone:'Uttara',type:'Commercial',series:[52.6,55.1,49.8,53.4,51.9,12.7],risk:90,status:'High Risk',litresAtRisk:39833},
+    {id:'WASA-00073',zone:'Mohammadpur',type:'Residential',series:[34.2,33.6,35.1,32.8,34.5,8.9],risk:88,status:'High Risk',litresAtRisk:36200},
+    {id:'WASA-00191',zone:'Mirpur',type:'Commercial',series:[44.7,42.3,46.1,43.8,45.2,15.5],risk:86,status:'High Risk',litresAtRisk:29699},
+    {id:'WASA-00129',zone:'Tejgaon',type:'Commercial',series:[37.9,36.4,38.8,35.7,37.2,11.3],risk:84,status:'High Risk',litresAtRisk:25900},
+    {id:'WASA-00164',zone:'Dhanmondi',type:'Residential',series:[29.5,30.8,28.7,31.2,29.9,10.5],risk:82,status:'High Risk',litresAtRisk:19418},
+    {id:'WASA-00058',zone:'Mirpur',type:'Residential',series:[22.4,21.8,22.9,21.5,22.2,12.1],risk:61,status:'Medium Risk',litresAtRisk:10500},
+    {id:'WASA-00102',zone:'Mirpur',type:'Commercial',series:[48.5,47.2,49.0,46.8,48.1,27.9],risk:57,status:'Medium Risk',litresAtRisk:20700},
+    {id:'WASA-00177',zone:'Gulshan',type:'Residential',series:[19.6,20.2,18.9,20.5,19.8,11.4],risk:55,status:'Medium Risk',litresAtRisk:8900},
+    {id:'WASA-00023',zone:'Dhanmondi',type:'Residential',series:[16.8,17.2,16.5,17.8,17.1,13.2],risk:34,status:'Low Risk',litresAtRisk:3900},
+    {id:'WASA-00095',zone:'Tejgaon',type:'Commercial',series:[39.6,38.2,40.5,39.1,38.8,32.4],risk:31,status:'Low Risk',litresAtRisk:7200},
+    {id:'WASA-00148',zone:'Mohammadpur',type:'Residential',series:[24.1,23.6,24.8,23.2,24.4,19.8],risk:28,status:'Low Risk',litresAtRisk:4700}
+  ];
+  var fmap = {};
+  FLAGGED.forEach(function(f){ fmap[f.id] = f; });
+
+  /* 200 accounts: flagged literals + 186 seeded "Normal" accounts */
+  var rnd = mulberry32(20260401);
+  var accounts = [];
+  for (var i = 1; i <= 200; i++){
+    var id = 'WASA-' + ('00000' + i).slice(-5);
+    if (fmap[id]){ accounts.push(JSON.parse(JSON.stringify(fmap[id]))); continue; }
+    var zone = ZONES[Math.floor(rnd() * ZONES.length)];
+    var type = rnd() < 0.28 ? 'Commercial' : 'Residential';
+    var base = type === 'Commercial' ? 35 + rnd() * 55 : 8 + rnd() * 22;
+    var series = [], m;
+    for (m = 0; m < 6; m++){ series.push(Math.round(base * (0.92 + rnd() * 0.16) * 10) / 10); }
+    var avg = series.reduce(function(a,b){ return a + b; }, 0) / 6;
+    accounts.push({ id:id, zone:zone, type:type, series:series,
+      risk:Math.round(2 + rnd() * 38), status:'Normal', litresAtRisk:0,
+      lastVsAvg:Math.round((avg - series[5]) / avg * 1000) / 10 });
+  }
+  accounts.forEach(function(a){
+    var sum = a.series.reduce(function(x,y){ return x + y; }, 0);
+    a.avg = Math.round(sum / 6 * 10) / 10;
+    a.last = a.series[5];
+    a.dropPct = a.avg > 0 ? Math.round((a.avg - a.last) / a.avg * 1000) / 10 : 0;
+  });
+
+  /* ranked order: flagged by litres desc, then risk desc, then normals by risk desc */
+  var ranked = accounts.slice().sort(function(a,b){
+    if (a.status !== 'Normal' && b.status !== 'Normal'){
+      if (b.litresAtRisk !== a.litresAtRisk) return b.litresAtRisk - a.litresAtRisk;
+    }
+    if ((b.status !== 'Normal') !== (a.status !== 'Normal')) return a.status !== 'Normal' ? -1 : 1;
+    if (b.risk !== a.risk) return b.risk - a.risk;
+    return a.id < b.id ? -1 : 1;
+  });
+
+  var high = accounts.filter(function(a){ return a.status === 'High Risk'; });
+  var flaggedAll = accounts.filter(function(a){ return a.status !== 'Normal'; });
+  var kpis = {
+    scanned: accounts.length,
+    high: high.length,
+    flagged: flaggedAll.length,
+    litres: high.reduce(function(s,a){ return s + a.litresAtRisk; }, 0),
+    revenue: high.reduce(function(s,a){ return s + Math.round(a.litresAtRisk / 1000 * TARIFF_DASH); }, 0)
+  };
+
+  /* ---- DMA zones: 48h flow (L/min) + pressure (bar), diurnal pattern ---- */
+  var DMA_NAMES = ['Mirpur-A','Mirpur-B','Dhanmondi-A','Dhanmondi-B','Uttara-A','Uttara-B',
+                   'Gulshan-A','Gulshan-B','Mohammadpur-A','Mohammadpur-B','Tejgaon-A','Tejgaon-C'];
+  var dma = DMA_NAMES.map(function(name, ix){
+    var r2 = mulberry32(777001 + ix * 131);
+    var base = 380 + r2() * 520;
+    var pBase = 2.1 + r2() * 1.1;
+    var anom = (name === 'Mirpur-B');
+    var nightBias = (name === 'Dhanmondi-B') ? 1.55 : 1.0;
+    var flow = [], press = [], h, hod, day, f, p;
+    for (h = 0; h < 48; h++){
+      hod = h % 24;
+      day = 1 + 0.9 * Math.exp(-Math.pow(hod - 13, 2) / 20)
+              + 0.4 * Math.exp(-Math.pow(hod - 8, 2) / 5)
+              + 0.25 * Math.exp(-Math.pow(hod - 20, 2) / 8);
+      f = base * day * (0.94 + r2() * 0.12);
+      p = pBase - 0.45 * (day - 1) + (r2() - 0.5) * 0.06;
+      if (hod >= 1 && hod <= 5) f *= nightBias;
+      if (anom && h >= 26 && h < 32){ f *= 1.7; p *= 0.55; }
+      flow.push(Math.round(f));
+      press.push(Math.round(p * 100) / 100);
+    }
+    var dayF = [], nightF = [], nightP = [];
+    for (h = 0; h < 48; h++){
+      hod = h % 24;
+      if (hod >= 10 && hod <= 16) dayF.push(flow[h]);
+      if (hod >= 2 && hod <= 4){ nightF.push(flow[h]); nightP.push(press[h]); }
+    }
+    var avgOf = function(arr){ return arr.reduce(function(a,b){ return a + b; },0) / arr.length; };
+    var baseline = Math.round(avgOf(dayF));
+    var night = Math.round(avgOf(nightF));
+    var nightPavg = Math.round(avgOf(nightP) * 100) / 100;
+    var ratio = night / baseline;
+    var status = anom ? 'Anomaly' : (ratio > 0.5 ? 'Watch' : 'Normal');
+    return { name:name, flow:flow, press:press, baseline:baseline, night:night,
+             nightP:nightPavg, ratio:Math.round(ratio * 100) / 100, status:status, anom:anom };
+  });
+
+  /* ---- SAR hotspots (concept layer) ---- */
+  var hotspots = [
+    {id:'HS-1', name:'Mirpur-2 · near Pillar 27', conf:0.87, x:150, y:180, pri:'High',
+     last:'11 Oct 2026 — Sentinel-1A, ascending orbit', pair:'Correlates with a 1968-era CI main, 3 past repairs'},
+    {id:'HS-2', name:'Jigatola · Dhanmondi edge', conf:0.74, x:360, y:300, pri:'Medium',
+     last:'9 Oct 2026 — Sentinel-1A, descending orbit', pair:'Correlates with high DMA night flow nearby'},
+    {id:'HS-3', name:'Bashundhara · Block C service main', conf:0.61, x:524, y:120, pri:'Medium',
+     last:'8 Oct 2026 — Sentinel-1A, ascending orbit', pair:'New development; unverified connection survey'}
+  ];
+
+  return { zones:ZONES, accounts:accounts, ranked:ranked, high:high, flaggedAll:flaggedAll,
+           kpis:kpis, dma:dma, hotspots:hotspots, tariffDash:TARIFF_DASH };
+})();
+
+/* ================= 3. HELPERS ================= */
+function fmtInt(n){ return Math.round(n).toLocaleString('en-US'); }
+function fmt1(n){ return (Math.round(n * 10) / 10).toFixed(1); }
+function fmtBDT(n){
+  if (n >= 1e7) return '৳' + (n / 1e7).toFixed(2) + ' crore';
+  if (n >= 1e5) return '৳' + (n / 1e5).toFixed(1) + ' lakh';
+  return '৳' + fmtInt(n);
+}
+function revOf(litres, tariff){ return Math.round(litres / 1000 * tariff); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function causeFor(a){
+  if (a.status === 'High Risk') return 'meter bypass or tampering';
+  if (a.status === 'Medium Risk') return 'an underground leak or unauthorised use on the connection';
+  if (a.status === 'Low Risk') return 'a behavioural or seasonal change in use';
+  return null;
+}
+function actionFor(a){
+  if (a.status === 'High Risk') return 'schedule a field inspection within 14 days and verify the meter seal';
+  if (a.status === 'Medium Risk') return 'dispatch a meter-reading verification visit within 30 days';
+  if (a.status === 'Low Risk') return 'monitor for one more billing cycle before escalating';
+  return 'no action needed — routine billing cycle';
+}
+
+/* ================= 4. UI ================= */
+(function(){
+  if (typeof document === 'undefined') return; /* allows headless data checks */
+  function $(id){ return document.getElementById(id); }
+
+  /* ---- banner ---- */
+  try {
+    if (sessionStorage.getItem('aquax_demo_banner') === '1') $('demo-banner').classList.add('hidden');
+  } catch (e) { /* storage unavailable — keep banner */ }
+  $('banner-x').addEventListener('click', function(){
+    $('demo-banner').classList.add('hidden');
+    try { sessionStorage.setItem('aquax_demo_banner', '1'); } catch (e) {}
+  });
+
+  /* ---- toast ---- */
+  var toastTimer = null;
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  /* ---- tabs ---- */
+  var TITLES = { dashboard:'Dashboard', droplet:'Droplet — Your AI Water Assistant',
+    dma:'DMA Zone Monitor', sar:'Satellite SAR (Concept)', sim:'What-If Recovery Simulator', reports:'Reports' };
+  var fab = $('fab');
+  function showTab(name){
+    var tabs = document.querySelectorAll('.nav button');
+    for (var i = 0; i < tabs.length; i++){
+      var on = tabs[i].getAttribute('data-tab') === name;
+      tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    var secs = document.querySelectorAll('.tab');
+    for (var j = 0; j < secs.length; j++) secs[j].classList.remove('active');
+    $('tab-' + name).classList.add('active');
+    $('tab-title').textContent = TITLES[name] || name;
+    if (name === 'droplet') fab.classList.add('hidden'); else fab.classList.remove('hidden');
+  }
+  document.querySelectorAll('.nav button').forEach(function(b){
+    b.addEventListener('click', function(){ showTab(b.getAttribute('data-tab')); });
+  });
+  fab.addEventListener('click', function(){
+    showTab('droplet');
+    try { $('chat-input').focus(); } catch (e) {}
+  });
+
+  /* ---- KPI count-up ---- */
+  function countUp(el, target, fmt){
+    var reduced = false;
+    try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    if (reduced){ el.textContent = fmt(target); return; }
+    var t0 = null, DUR = 900;
+    function step(ts){
+      if (!t0) t0 = ts;
+      var p = Math.min((ts - t0) / DUR, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(Math.round(target * eased));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  countUp($('k1'), DATA.kpis.scanned, fmtInt);
+  countUp($('k2'), DATA.kpis.high, fmtInt);
+  countUp($('k3'), DATA.kpis.litres, fmtInt);
+  countUp($('k4'), DATA.kpis.revenue, function(n){ return '৳' + fmtInt(n); });
+
+  /* ---- dashboard table ---- */
+  var zoneSel = $('f-zone');
+  DATA.zones.forEach(function(z){
+    var o = document.createElement('option'); o.textContent = z; zoneSel.appendChild(o);
+  });
+  function trendCell(a){
+    var d = a.dropPct;
+    if (d >= 25) return '<span class="dropdn dn-bad">▼ −' + fmt1(d) + '%</span>';
+    if (d <= -25) return '<span class="dropdn dn-ok">▲ +' + fmt1(-d) + '%</span>';
+    if (d > 0) return '<span class="dropdn dn-mid">−' + fmt1(d) + '%</span>';
+    return '<span class="dropdn dn-ok">~' + fmt1(Math.abs(d)) + '%</span>';
+  }
+  function renderTable(){
+    var q = $('f-search').value.trim().toUpperCase();
+    var z = zoneSel.value, s = $('f-status').value;
+    var rows = DATA.ranked.filter(function(a){
+      if (q && a.id.indexOf(q) === -1) return false;
+      if (z && a.zone !== z) return false;
+      if (s && a.status !== s) return false;
+      return true;
+    });
+    var html = rows.map(function(a){
+      var rc = a.risk >= 80 ? 'r-h' : a.risk >= 50 ? 'r-m' : a.risk >= 25 ? 'r-l' : 'r-n';
+      var sc = a.status === 'High Risk' ? 'chip-h' : a.status === 'Medium Risk' ? 'chip-m' : a.status === 'Low Risk' ? 'chip-l' : 'chip-n';
+      return '<tr data-id="' + a.id + '" tabindex="0" aria-label="Open ' + a.id + '"><td><strong>' + a.id + '</strong></td><td>' + a.zone +
+        '</td><td>' + a.type + '</td><td>' + trendCell(a) + '</td><td>' + fmt1(a.avg) + '</td><td>' + fmt1(a.last) +
+        '</td><td><span class="riskb ' + rc + '">' + a.risk + '</span></td><td><span class="chip ' + sc + '">' + a.status + '</span></td></tr>';
+    }).join('');
+    $('acc-tbody').innerHTML = html;
+    $('tbl-count').textContent = 'Showing ' + rows.length + ' of ' + DATA.accounts.length + ' accounts · ' + DATA.kpis.flagged + ' flagged';
+  }
+  renderTable();
+  ['f-search','f-zone','f-status'].forEach(function(id){
+    $(id).addEventListener('input', renderTable);
+    $(id).addEventListener('change', renderTable);
+  });
+  $('acc-tbody').addEventListener('click', function(ev){
+    var tr = ev.target.closest('tr');
+    if (tr) openDrawer(tr.getAttribute('data-id'));
+  });
+  $('acc-tbody').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter' || ev.key === ' '){
+      var tr = ev.target.closest('tr');
+      if (tr){ ev.preventDefault(); openDrawer(tr.getAttribute('data-id')); }
+    }
+  });
+
+  /* ---- drawer ---- */
+  var lastFocus = null;
+  function sparkSVG(a){
+    var W = 386, H = 96, pad = 10;
+    var min = Math.min.apply(null, a.series), max = Math.max.apply(null, a.series);
+    var span = (max - min) || 1;
+    var pts = a.series.map(function(v, i){
+      var x = pad + (W - pad * 2) * i / 5;
+      var y = pad + (H - pad * 2) * (1 - (v - min) / span);
+      return Math.round(x) + ',' + Math.round(y);
+    });
+    var area = pts.join(' ');
+    var lastPt = pts[5].split(',');
+    return '<svg viewBox="0 0 ' + W + ' ' + (H + 22) + '" style="width:100%;height:auto" role="img" aria-label="6-month consumption trend">' +
+      '<polygon points="' + pad + ',' + (H - 2) + ' ' + area + ' ' + (W - pad) + ',' + (H - 2) + '" fill="#E0F2F7"/>' +
+      '<polyline points="' + area + '" fill="none" stroke="#0E7490" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' +
+      '<circle cx="' + lastPt[0] + '" cy="' + lastPt[1] + '" r="4" fill="#DC2626"/>' +
+      '<text x="' + pad + '" y="' + (H + 16) + '" font-size="10" fill="#64748B">6 months ago</text>' +
+      '<text x="' + (W - pad) + '" y="' + (H + 16) + '" font-size="10" fill="#64748B" text-anchor="end">last month: ' + fmt1(a.last) + ' kl</text></svg>';
+  }
+  function assessmentText(a){
+    if (a.status === 'Normal'){
+      var d = Math.abs(a.dropPct);
+      return a.id + ' shows no anomaly: consumption varied within ±' + fmt1(d) +
+        '% of its 6-month average (' + fmt1(a.avg) + ' kl/month, latest ' + fmt1(a.last) +
+        ' kl). The pattern is consistent with normal household or commercial use. Recommended: ' + actionFor(a) + '.';
+    }
+    var rev = revOf(a.litresAtRisk, DATA.tariffDash);
+    return 'Consumption fell ' + fmt1(a.dropPct) + '% below its 6-month average (' + fmt1(a.avg) + ' kl → ' + fmt1(a.last) +
+      ' kl) while the connection stayed active — a pattern consistent with ' + causeFor(a) +
+      '. The billing-analysis model estimates ' + fmtInt(a.litresAtRisk) + ' L/month at risk (≈ ৳' + fmtInt(rev) +
+      ' per month at the dashboard\u2019s assumed tariff of ৳' + DATA.tariffDash + '/kl). Risk score ' + a.risk + '/100. Recommended: ' + actionFor(a) + '.';
+  }
+  function openDrawer(id){
+    var a = null;
+    for (var i = 0; i < DATA.accounts.length; i++){ if (DATA.accounts[i].id === id){ a = DATA.accounts[i]; break; } }
+    if (!a) return;
+    lastFocus = document.activeElement;
+    $('dr-title').textContent = a.id + ' · ' + a.zone;
+    var sc = a.status === 'High Risk' ? 'chip-h' : a.status === 'Medium Risk' ? 'chip-m' : a.status === 'Low Risk' ? 'chip-l' : 'chip-n';
+    $('dr-chip').innerHTML = '<span class="chip ' + sc + '">' + a.status + '</span>';
+    $('dr-spark').innerHTML = sparkSVG(a);
+    $('dr-stats').innerHTML =
+      '<div class="sg"><div class="k">Zone</div><div class="v">' + a.zone + '</div></div>' +
+      '<div class="sg"><div class="k">Type</div><div class="v">' + a.type + '</div></div>' +
+      '<div class="sg"><div class="k">Avg 6-mo</div><div class="v">' + fmt1(a.avg) + ' kl/mo</div></div>' +
+      '<div class="sg"><div class="k">Last month</div><div class="v">' + fmt1(a.last) + ' kl</div></div>' +
+      '<div class="sg"><div class="k">Est. shortfall</div><div class="v">' + (a.litresAtRisk ? fmtInt(a.litresAtRisk) + ' L/mo' : '—') + '</div></div>' +
+      '<div class="sg"><div class="k">Risk score</div><div class="v">' + a.risk + ' / 100</div></div>';
+    $('dr-assess').textContent = assessmentText(a);
+    $('dr-action').innerHTML = '<strong>Recommended field action:</strong> ' + esc(actionFor(a)) + '.';
+    $('dr-copy').setAttribute('data-id', a.id);
+    $('overlay').classList.add('open');
+    $('drawer').classList.add('open');
+    $('dr-close').focus();
+  }
+  function closeDrawer(){
+    $('overlay').classList.remove('open');
+    $('drawer').classList.remove('open');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  $('dr-close').addEventListener('click', closeDrawer);
+  $('overlay').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape' && $('drawer').classList.contains('open')) closeDrawer();
+  });
+
+  /* copy assessment */
+  function copyText(txt, okMsg){
+    function fallback(){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        toast(ok ? okMsg : 'Copy failed — select the text manually');
+      } catch (e) { toast('Copy failed — select the text manually'); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ toast(okMsg); }, fallback);
+    } else fallback();
+  }
+  $('dr-copy').addEventListener('click', function(){
+    var id = this.getAttribute('data-id'), a = null;
+    for (var i = 0; i < DATA.accounts.length; i++){ if (DATA.accounts[i].id === id){ a = DATA.accounts[i]; break; } }
+    if (a) copyText(assessmentText(a), 'Assessment copied to clipboard');
+  });
+
+  /* ---- Droplet chat ---- */
+  var log = $('chat-log');
+  function addMsg(text, who){
+    var d = document.createElement('div');
+    d.className = 'msg ' + who; d.textContent = text;
+    log.appendChild(d); log.scrollTop = log.scrollHeight;
+  }
+  function chatTariff(){
+    var v = parseFloat($('chat-tariff').value);
+    return (isFinite(v) && v > 0) ? v : 25;
+  }
+  function zoneFlagStats(){
+    var byZone = {}, z;
+    DATA.zones.forEach(function(zn){ byZone[zn] = { n:0, litres:0, high:0, top:null }; });
+    DATA.flaggedAll.forEach(function(a){
+      var b = byZone[a.zone];
+      b.n++; b.litres += a.litresAtRisk;
+      if (a.status === 'High Risk') b.high++;
+      if (!b.top || a.litresAtRisk > b.top.litresAtRisk) b.top = a;
+    });
+    return byZone;
+  }
+  function answer(msg){
+    var m = msg.toLowerCase();
+    var byZone, best, lines, acct, i, idMatch = msg.match(/WASA-?0*(\d{1,5})/i), id = null;
+    if (idMatch){ id = 'WASA-' + ('00000' + parseInt(idMatch[1], 10)).slice(-5); }
+    if (id && id !== null){
+      for (i = 0; i < DATA.accounts.length; i++){ if (DATA.accounts[i].id === id){ acct = DATA.accounts[i]; break; } }
+    }
+    if (/revenue|recover|taka|৳|money|income/.test(m)){
+      var t = chatTariff();
+      var monthly = DATA.high.reduce(function(s,a){ return s + revOf(a.litresAtRisk, t); }, 0);
+      return 'Across the ' + DATA.high.length + ' high-risk accounts, the model estimates ' + fmtInt(DATA.kpis.litres) +
+        ' litres/month at risk. At your tariff of ৳' + t + '/kl (user-set), that is ≈ ৳' + fmtInt(monthly) +
+        ' per month, or ≈ ' + fmtBDT(monthly * 12) + ' per year.\n\nNote: the dashboard KPI card uses a separate assumed tariff of ৳' +
+        DATA.tariffDash + '/kl, which gives the ৳' + fmtInt(DATA.kpis.revenue) + '/month you see there. Medium and low-risk flags (' +
+        (DATA.kpis.flagged - DATA.high.length) + ' accounts) would add to this once verified.';
+    }
+    if (/commercial/.test(m) && /drop|sudden|plunge/.test(m)){
+      lines = DATA.flaggedAll.filter(function(a){ return a.type === 'Commercial'; })
+        .sort(function(a,b){ return b.dropPct - a.dropPct; })
+        .map(function(a){ return a.id + ' (' + a.zone + ') — consumption down ' + fmt1(a.dropPct) + '%, ' + fmtInt(a.litresAtRisk) + ' L/mo at risk, ' + a.status; });
+      return 'Commercial accounts with sudden drops in the current dataset:\n\n• ' + lines.join('\n• ') +
+        '\n\nThe pattern to look for: a stable 6-month baseline followed by a crash while the connection stays active — consistent with bypass or tampering.';
+    }
+    if (/zone/.test(m) && /flag|most|risk|worst/.test(m)){
+      byZone = zoneFlagStats();
+      best = DATA.zones[0];
+      DATA.zones.forEach(function(zn){ if (byZone[zn].n > byZone[best].n) best = zn; });
+      return 'Computed live from the dataset: the zone with the most flagged accounts is ' + best + ' — ' +
+        byZone[best].n + ' of ' + DATA.kpis.flagged + ' flagged (' + byZone[best].high + ' high-risk), with an estimated ' +
+        fmtInt(byZone[best].litres) + ' L/month at risk. Largest single flag there: ' + byZone[best].top.id +
+        ' (' + fmtInt(byZone[best].top.litresAtRisk) + ' L/mo). Full ranking: ' +
+        DATA.zones.map(function(zn){ return zn + ' ' + byZone[zn].n; }).join(', ') + '.';
+    }
+    if (/how|work|what is aquax|layer|explain/.test(m)){
+      return 'AquaX detects water loss in three layers:\n\n1. Billing anomaly detection (working MVP, this demo): risk-scores every connection from billing history and explains each flag in plain language.\n2. DMA flow & pressure anomaly (Year-2 prototype): listens to district-metered-area SCADA, using night-flow and pressure signatures to localise leaks (see the DMA Zone Monitor tab).\n3. Sentinel-1 SAR leak mapping (Year 2–3 concept): free ESA Copernicus radar imagery spots soil-moisture anomalies along buried mains (see the Satellite SAR tab).\n\nAll three feed one dashboard that ranks by litres and revenue recoverable. Reminder: this build runs on a synthetic demo dataset.';
+    }
+    if (acct){
+      if (acct.status === 'Normal'){
+        return acct.id + ' (' + acct.zone + ', ' + acct.type + ') is normal: 6-month average ' + fmt1(acct.avg) +
+          ' kl/month, latest reading ' + fmt1(acct.last) + ' kl, risk score ' + acct.risk + '/100. No action needed.';
+      }
+      return acct.id + ' (' + acct.zone + ', ' + acct.type + ') is flagged ' + acct.status + ': consumption down ' +
+        fmt1(acct.dropPct) + '% vs its 6-month average (' + fmt1(acct.avg) + ' kl → ' + fmt1(acct.last) +
+        ' kl), risk score ' + acct.risk + '/100, est. ' + fmtInt(acct.litresAtRisk) + ' L/month at risk (≈ ৳' +
+        fmtInt(revOf(acct.litresAtRisk, chatTariff())) + '/mo at ৳' + chatTariff() + '/kl). Click its row in the Dashboard tab for the full assessment.';
+    }
+    for (i = 0; i < DATA.zones.length; i++){
+      if (m.indexOf(DATA.zones[i].toLowerCase()) !== -1){
+        byZone = zoneFlagStats();
+        var zn = DATA.zones[i];
+        var total = DATA.accounts.filter(function(a){ return a.zone === zn; }).length;
+        return zn + ' in this dataset: ' + total + ' accounts scanned, ' + byZone[zn].n + ' flagged (' +
+          byZone[zn].high + ' high-risk), est. ' + fmtInt(byZone[zn].litres) + ' L/month at risk in flagged accounts.' +
+          (byZone[zn].top ? ' Largest flag: ' + byZone[zn].top.id + ' (' + fmtInt(byZone[zn].top.litresAtRisk) + ' L/mo).' : '');
+      }
+    }
+    if (/high.?risk|flag/.test(m)){
+      lines = DATA.high.map(function(a){ return a.id + ' (' + a.zone + ') — ' + fmtInt(a.litresAtRisk) + ' L/mo at risk, score ' + a.risk; });
+      return 'The ' + DATA.high.length + ' high-risk accounts, ranked by litres at risk:\n\n• ' + lines.join('\n• ') +
+        '\n\nTotal: ' + fmtInt(DATA.kpis.litres) + ' L/month.';
+    }
+    return 'I can answer from the demo dataset. Try:\n• an account ID (e.g. "WASA-00042")\n• a zone name (e.g. "Mirpur")\n• "Which zone has the most flagged accounts?"\n• "What revenue could we recover this month?"\n• "Show me commercial accounts with sudden drops"\n• "How does AquaX work?"\n\nI never quote numbers that are not computed from the data, and for what-if projections the What-If Simulator tab computes live from your own inputs.';
+  }
+  function ask(q){
+    if (!q.trim()) return;
+    addMsg(q, 'user');
+    setTimeout(function(){ addMsg(answer(q), 'bot'); }, 180);
+  }
+  addMsg('Hi, I\u2019m Droplet — the AquaX water assistant. Everything I say is computed live from the seeded demo dataset (200 accounts). Pick a suggestion below or ask me anything about accounts, zones, flags or recovery.', 'bot');
+  $('chat-send').addEventListener('click', function(){ ask($('chat-input').value); $('chat-input').value = ''; });
+  $('chat-input').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter'){ ask($('chat-input').value); $('chat-input').value = ''; }
+  });
+  document.querySelectorAll('#chips .chipbtn').forEach(function(c){
+    c.addEventListener('click', function(){ ask(c.textContent); });
+  });
+
+  /* ---- DMA tab ---- */
+  var selZone = DATA.dma[1]; /* Mirpur-B: the anomaly zone */
+  function renderDmaCards(){
+    $('dma-cards').innerHTML = DATA.dma.map(function(z, i){
+      var chip = z.status === 'Anomaly' ? 'chip-h' : z.status === 'Watch' ? 'chip-m' : 'chip-n';
+      return '<div class="zonecard' + (z === selZone ? ' sel' : '') + '" data-i="' + i + '" tabindex="0" role="button" aria-label="View ' + z.name + '">' +
+        '<div class="zc-top"><span>' + z.name + '</span><span class="chip ' + chip + '">' + z.status + '</span></div>' +
+        '<div class="zc-row"><span>Baseline ' + fmtInt(z.baseline) + ' L/min</span><span>Night ' + fmtInt(z.night) + ' L/min</span><span>' + z.ratio + '× night ratio</span></div></div>';
+    }).join('');
+  }
+  function renderDmaChart(){
+    var z = selZone, W = 680, H = 250, pl = 46, pr = 46, pt = 14, pb = 28;
+    function x(h){ return pl + (W - pl - pr) * h / 47; }
+    var fmin = Math.min.apply(null, z.flow) * 0.95, fmax = Math.max.apply(null, z.flow) * 1.05;
+    var pmin = 0.5, pmax = 4;
+    function fy(v){ return pt + (H - pt - pb) * (1 - (v - fmin) / (fmax - fmin)); }
+    function py(v){ return pt + (H - pt - pb) * (1 - (v - pmin) / (pmax - pmin)); }
+    var fp = z.flow.map(function(v, h){ return Math.round(x(h)) + ',' + Math.round(fy(v)); }).join(' ');
+    var pp = z.press.map(function(v, h){ return Math.round(x(h) * 10) / 10 + ',' + Math.round(py(v) * 10) / 10; }).join(' ');
+    var grid = '', gv, g;
+    for (g = 0; g <= 4; g++){
+      gv = Math.round(fmin + (fmax - fmin) * g / 4);
+      grid += '<line x1="' + pl + '" y1="' + Math.round(fy(gv)) + '" x2="' + (W - pr) + '" y2="' + Math.round(fy(gv)) + '" stroke="#F1F5F9"/>' +
+        '<text x="' + (pl - 6) + '" y="' + (Math.round(fy(gv)) + 3) + '" font-size="10" fill="#94A3B8" text-anchor="end">' + gv + '</text>';
+    }
+    var xticks = [0, 12, 24, 36, 47], xt = '';
+    xticks.forEach(function(h){
+      var lab = h === 0 ? '00:00 day 1' : h === 24 ? '00:00 day 2' : h === 47 ? 'now' : ('h+' + h);
+      xt += '<text x="' + Math.round(x(h)) + '" y="' + (H - 8) + '" font-size="10" fill="#94A3B8" text-anchor="middle">' + lab + '</text>';
+    });
+    var band = z.anom ? '<rect x="' + Math.round(x(26)) + '" y="' + pt + '" width="' + Math.round(x(31.999) - x(26)) + '" height="' + (H - pt - pb) + '" fill="#DC2626" opacity="0.10"/><text x="' + Math.round((x(26) + x(32)) / 2) + '" y="' + (pt + 14) + '" font-size="10" fill="#DC2626" text-anchor="middle" font-weight="700">anomaly window</text>' : '';
+    $('dma-chart').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto" role="img" aria-label="48 hour flow and pressure for ' + z.name + '">' +
+      grid + band +
+      '<polyline points="' + fp + '" fill="none" stroke="#0E7490" stroke-width="2"/>' +
+      '<polyline points="' + pp + '" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-dasharray="5 4"/>' +
+      '<text x="' + (pl + 4) + '" y="11" font-size="10" fill="#0E7490" font-weight="700">flow L/min</text>' +
+      '<text x="' + (W - pr - 4) + '" y="11" font-size="10" fill="#94A3B8" font-weight="700" text-anchor="end">pressure bar (dashed)</text>' +
+      xt + '</svg>';
+    $('dma-name').textContent = z.name;
+    $('dma-sub').textContent = '48-hour simulated SCADA · 15-min intervals';
+    $('dma-stats').innerHTML =
+      '<div class="outgrid" style="grid-template-columns:repeat(4,1fr)">' +
+      '<div class="og"><div class="k">Baseline (day)</div><div class="v">' + fmtInt(z.baseline) + ' L/min</div></div>' +
+      '<div class="og"><div class="k">Night flow (02–04h)</div><div class="v">' + fmtInt(z.night) + ' L/min</div></div>' +
+      '<div class="og"><div class="k">Night pressure</div><div class="v">' + z.nightP.toFixed(2) + ' bar</div></div>' +
+      '<div class="og"><div class="k">Night ratio</div><div class="v">' + z.ratio + '×</div></div></div>' +
+      (z.anom ? '<p class="note" style="color:#B91C1C">Flagged: pressure dropped ~45% during hours 26–32 while night flow rose ~70% above baseline — a classic rupture signature (Layer-2 concept).</p>'
+              : '<p class="note">No anomaly signature in this window. Night ratio ' + z.ratio + '× is ' + (z.status === 'Watch' ? 'elevated — queued for watch.' : 'within the normal band (≤0.5×).') + '</p>');
+  }
+  renderDmaCards(); renderDmaChart();
+  $('dma-cards').addEventListener('click', function(ev){
+    var c = ev.target.closest('.zonecard');
+    if (c){ selZone = DATA.dma[parseInt(c.getAttribute('data-i'), 10)]; renderDmaCards(); renderDmaChart(); }
+  });
+  $('dma-cards').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter' || ev.key === ' '){
+      var c = ev.target.closest('.zonecard');
+      if (c){ ev.preventDefault(); selZone = DATA.dma[parseInt(c.getAttribute('data-i'), 10)]; renderDmaCards(); renderDmaChart(); }
+    }
+  });
+
+  /* ---- SAR tab ---- */
+  function sarMapSVG(){
+    var blocks = '', r, c, bx, by;
+    for (r = 0; r < 5; r++){
+      for (c = 0; c < 8; c++){
+        bx = 28 + c * 76; by = 26 + r * 84;
+        blocks += '<rect x="' + bx + '" y="' + by + '" width="58" height="62" rx="4" fill="#E2E8F0" opacity="0.75"/>';
+      }
+    }
+    var roads = '';
+    for (c = 0; c <= 8; c++){ roads += '<line x1="' + (14 + c * 76) + '" y1="16" x2="' + (14 + c * 76) + '" y2="452" stroke="#CBD5E1" stroke-width="7"/>'; }
+    for (r = 0; r <= 5; r++){ roads += '<line x1="14" y1="' + (14 + r * 84) + '" x2="626" y2="' + (14 + r * 84) + '" stroke="#CBD5E1" stroke-width="7"/>'; }
+    var river = '<path d="M0 446 C 140 420, 300 470, 640 434 L 640 480 L 0 480 Z" fill="#BAE6FD" opacity="0.9"/>';
+    var hss = DATA.hotspots.map(function(h, i){
+      var rad = 16 + h.conf * 24;
+      var cls = 'hs-ring'; if (h.pri === 'High') cls += ' hs-high';
+      return '<g class="hs-g" data-i="' + i + '" style="cursor:pointer" role="button" aria-label="' + h.name + ', confidence ' + Math.round(h.conf * 100) + '%">' +
+        '<circle class="pulse" cx="' + h.x + '" cy="' + h.y + '" r="' + Math.round(rad) + '" fill="#DC2626" opacity="0.35"/>' +
+        '<circle cx="' + h.x + '" cy="' + h.y + '" r="' + Math.round(rad * 0.55) + '" fill="#DC2626" opacity="0.55" stroke="#B91C1C" stroke-width="2"/>' +
+        '<text x="' + h.x + '" y="' + (h.y - rad - 8) + '" font-size="11" font-weight="700" fill="#B91C1C" text-anchor="middle">' + h.id + ' · ' + Math.round(h.conf * 100) + '%</text></g>';
+    }).join('');
+    return '<g>' + blocks + roads + river + hss + '</g>';
+  }
+  function renderSarPanel(sel){
+    $('sar-panel').innerHTML = DATA.hotspots.map(function(h, i){
+      var chip = h.pri === 'High' ? 'chip-h' : 'chip-m';
+      return '<div class="hs-card' + (i === sel ? ' sel' : '') + '" data-i="' + i + '" tabindex="0" role="button">' +
+        '<div class="zc-top"><span>' + h.id + ' · ' + h.name + '</span><span class="chip ' + chip + '">' + h.pri + '</span></div>' +
+        '<div class="zc-row" style="display:block"><span>Confidence ' + Math.round(h.conf * 100) + '% · last Sentinel-1 pass: ' + h.last + '</span><br><span>' + h.pair + '</span></div></div>';
+    }).join('') || '';
+  }
+  $('sar-map').innerHTML = sarMapSVG();
+  renderSarPanel(0);
+  function pickHs(i){
+    renderSarPanel(i);
+    var cards = document.querySelectorAll('.hs-card');
+    for (var j = 0; j < cards.length; j++) cards[j].classList.toggle('sel', j === i);
+  }
+  $('sar-panel').addEventListener('click', function(ev){
+    var c = ev.target.closest('.hs-card');
+    if (c) pickHs(parseInt(c.getAttribute('data-i'), 10));
+  });
+  $('sar-panel').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter' || ev.key === ' '){
+      var c = ev.target.closest('.hs-card');
+      if (c){ ev.preventDefault(); pickHs(parseInt(c.getAttribute('data-i'), 10)); }
+    }
+  });
+  $('sar-map').addEventListener('click', function(ev){
+    var g = ev.target.closest('.hs-g');
+    if (g) pickHs(parseInt(g.getAttribute('data-i'), 10));
+  });
+
+  /* ---- Simulator ---- */
+  function sNum(id, min){ var v = parseFloat($(id).value); return isFinite(v) && v >= min ? v : min; }
+  function computeSim(){
+    var nrw = sNum('s-nrw', 0), cov = sNum('s-cov', 0), rec = sNum('s-rec', 0);
+    var prod = sNum('s-prod', 1), tariff = sNum('s-tariff', 0), share = sNum('s-share', 0);
+    var lpd = sNum('s-lpd', 1), op = sNum('s-op', 0), setup = sNum('s-setup', 0);
+    $('o-nrw').textContent = nrw + '%';
+    $('o-cov').textContent = cov + '%';
+    $('o-rec').textContent = rec + '%';
+    $('o-share').textContent = share + '%';
+    var loss = prod * nrw / 100;
+    var det = loss * cov / 100;
+    var recKl = det * rec / 100;
+    var bdt = recKl * tariff;
+    var shareBdt = bdt * share / 100;
+    var hh = Math.round(recKl * 1000 / (lpd * 5) / 365);
+    $('o-loss').textContent = fmtInt(loss) + ' kl';
+    $('o-det').textContent = fmtInt(det) + ' kl';
+    $('o-rec2').textContent = fmtInt(recKl) + ' kl';
+    $('o-bdt').textContent = fmtBDT(bdt);
+    $('o-sharev').textContent = fmtBDT(shareBdt);
+    $('o-hh').textContent = fmtInt(hh);
+
+    /* 36-month cumulative recovery (ramp 18mo) vs cost */
+    var W = 640, H = 230, pl = 56, pr = 14, pt = 14, pb = 28;
+    var fullMo = shareBdt / 12, cumR = 0, cumSeries = [], costSeries = [], mo;
+    for (mo = 1; mo <= 36; mo++){
+      cumR += fullMo * Math.min(mo / 18, 1);
+      cumSeries.push(cumR);
+      costSeries.push(setup + op * mo);
+    }
+    var vmax = Math.max(cumSeries[35], costSeries[35]) * 1.08 || 1;
+    function x(mo){ return pl + (W - pl - pr) * mo / 36; }
+    function y(v){ return pt + (H - pt - pb) * (1 - v / vmax); }
+    var rp = cumSeries.map(function(v, i){ return Math.round(x(i + 1)) + ',' + Math.round(y(v)); }).join(' ');
+    var cp = costSeries.map(function(v, i){ return Math.round(x(i + 1)) + ',' + Math.round(y(v)); }).join(' ');
+    var be = -1;
+    for (mo = 0; mo < 36; mo++){ if (cumSeries[mo] >= costSeries[mo]){ be = mo + 1; break; } }
+    var beSvg = '', grid = '', g;
+    for (g = 0; g <= 4; g++){
+      var gv2 = vmax * g / 4;
+      grid += '<line x1="' + pl + '" y1="' + Math.round(y(gv2)) + '" x2="' + (W - pr) + '" y2="' + Math.round(y(gv2)) + '" stroke="#F1F5F9"/>' +
+        '<text x="' + (pl - 6) + '" y="' + (Math.round(y(gv2)) + 3) + '" font-size="9.5" fill="#94A3B8" text-anchor="end">' + fmtBDT(gv2).replace('৳', '') + '</text>';
+    }
+    [0, 6, 12, 18, 24, 30, 36].forEach(function(mo2){
+      grid += '<text x="' + Math.round(x(mo2)) + '" y="' + (H - 8) + '" font-size="10" fill="#94A3B8" text-anchor="middle">M' + mo2 + '</text>';
+    });
+    if (be > 0){
+      beSvg = '<line x1="' + Math.round(x(be)) + '" y1="' + pt + '" x2="' + Math.round(x(be)) + '" y2="' + (H - pb) + '" stroke="#EA580C" stroke-dasharray="4 4"/>' +
+        '<circle cx="' + Math.round(x(be)) + '" cy="' + Math.round(y(cumSeries[be - 1])) + '" r="5" fill="#EA580C"/>' +
+        '<text x="' + Math.round(x(be) + 6) + '" y="' + (pt + 14) + '" font-size="10.5" font-weight="700" fill="#EA580C">break-even · month ' + be + '</text>';
+    }
+    $('sim-chart').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto" role="img" aria-label="Cumulative recovery versus cumulative cost over 36 months">' +
+      grid +
+      '<polyline points="' + rp + '" fill="none" stroke="#0E7490" stroke-width="2.4"/>' +
+      '<polyline points="' + cp + '" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="6 4"/>' +
+      beSvg +
+      '<text x="' + (pl + 4) + '" y="11" font-size="10" fill="#0E7490" font-weight="700">cumulative recovery ৳</text>' +
+      '<text x="' + (W - pr - 4) + '" y="11" font-size="10" fill="#64748B" font-weight="700" text-anchor="end">cumulative cost ৳ (dashed)</text></svg>';
+    $('sim-be').textContent = be > 0
+      ? 'Break-even at month ' + be + ': cumulative AquaX-share recovery passes the illustrative cost model (৳' + fmtInt(setup) + ' setup + ৳' + fmtInt(op) + '/month). Illustrative — AquaX estimate arithmetic; not a utility-reported figure.'
+      : 'No break-even within 36 months at these inputs — try raising coverage, recovery rate or tariff. Illustrative arithmetic only.';
+  }
+  ['s-nrw','s-cov','s-rec','s-prod','s-tariff','s-share','s-lpd','s-op','s-setup'].forEach(function(id){
+    $(id).addEventListener('input', computeSim);
+  });
+  computeSim();
+
+  /* ---- Reports ---- */
+  function downloadCSV(){
+    var head = ['Account ID','Zone','Type','Status','Risk score','Avg 6-mo (kl)','Last month (kl)','Est. shortfall (L/mo)','Est. recoverable at ৳15/kl (৳/mo)','Recommended action'];
+    var rows = DATA.flaggedAll.map(function(a){
+      return [a.id, a.zone, a.type, a.status, a.risk, a.avg, a.last, a.litresAtRisk,
+        revOf(a.litresAtRisk, DATA.tariffDash), actionFor(a)];
+    });
+    var q = function(v){
+      v = String(v);
+      return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    };
+    var csv = '\uFEFF' + head.map(q).join(',') + '\n' + rows.map(function(r){ return r.map(q).join(','); }).join('\n');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var aEl = document.createElement('a');
+    aEl.href = url; aEl.download = 'aquax-flagged-accounts.csv';
+    document.body.appendChild(aEl); aEl.click(); document.body.removeChild(aEl);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    toast('CSV downloaded — ' + rows.length + ' flagged accounts');
+  }
+  $('btn-csv').addEventListener('click', downloadCSV);
+  $('btn-print').addEventListener('click', function(){ window.print(); });
+
+  function renderPrintSummary(){
+    var d = new Date();
+    var dateStr = d.toISOString().slice(0, 10);
+    var rows = DATA.flaggedAll.map(function(a){
+      return '<tr><td>' + a.id + '</td><td>' + a.zone + '</td><td>' + a.type + '</td><td>' + a.status + '</td><td>' + a.risk +
+        '</td><td>' + fmt1(a.avg) + '</td><td>' + fmt1(a.last) + '</td><td>' + fmtInt(a.litresAtRisk) + '</td><td>' + actionFor(a) + '</td></tr>';
+    }).join('');
+    var html = '<div style="font-family:inherit">' +
+      '<h2 style="font-size:18px">AquaX — Flagged Accounts Summary</h2>' +
+      '<p style="font-size:11px;color:#475569">GP FutureMakers 2026 · Team AquaX · generated ' + dateStr +
+      ' · DEMO BUILD: Layer-1 engine is real; dataset is synthetic. Layer 2 &amp; 3 are design prototypes.</p>' +
+      '<p style="font-size:12px"><strong>' + fmtInt(DATA.kpis.scanned) + '</strong> accounts scanned · <strong>' + DATA.kpis.high +
+      '</strong> high-risk · <strong>' + fmtInt(DATA.kpis.litres) + '</strong> L/month at risk · <strong>৳' + fmtInt(DATA.kpis.revenue) +
+      '</strong>/month est. recoverable at ৳' + DATA.tariffDash + '/kl</p>' +
+      '<table style="width:100%;border-collapse:collapse"><thead><tr>' +
+      '<th>Account</th><th>Zone</th><th>Type</th><th>Status</th><th>Risk</th><th>Avg (kl)</th><th>Last (kl)</th><th>Shortfall (L/mo)</th><th>Recommended action</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    $('print-summary').innerHTML = html;
+  }
+  renderPrintSummary();
+})();
+</script>
+</body>
+</html>
